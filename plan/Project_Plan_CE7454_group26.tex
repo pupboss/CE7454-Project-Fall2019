@@ -12,7 +12,7 @@
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \begin{document}
 
-\title{Project Plan of Object Detection in xxx}
+\title{CE7454 Project: Simultaneous Prediction of Box-office and Movie Rating using Multimodal Neural Network}
 
 \author{\IEEEauthorblockN{Jie Li, Meng Shen, Ruihang Wang\footnotemark*}
   \IEEEauthorblockA{\textit{School of Computer Science and Engineering} \\
@@ -24,29 +24,51 @@
 \renewcommand{\thefootnote}{\fnsymbol{footnote}}
 \footnotetext[1]{Authors are sorted by initials.}
 
-\section{Project Motivation}
+\section{Motivation}
 
-Recently object detection is widely used in various fields, such as autonomous driving, video analytics and object tracking in filming. Thanks to the development of those object recognition techniques, there are many more possibilities in these industries. For example, auto driving could free drivers from fatigue of long distance driving, video analytics helps users detect potential targets with a pretty high accuracy and machines could run 7x24, object tracking assists professional photographers on eyes focus instead of focusing manually, moreover, it also introduces advanced filming skills to ordinary consumers for them to make fancy vlogs easily.
-
-In summary, object detection will and always will be integrated into different industries, and will free users from repetitive works.
+The world's movie industy has witnessed an unprecedented boom in recent years.
+With heavy investments on today's movie industry, reliable predictions of a movie's box-office
+revenue before its theatrical release is essential for producers to reduce financial risk. From the
+perspective of viewers, however, movie ratings is an imporatant factor of the quality of a movie. In
+this project, we are interested in predicting both box-office revenue and movie rating in an early stage,
+aiming to provide useful information for producers, distributors and viewers. 
 
 \section{Project Introduction}
 
-So, in this project, we are going to build a neural network to detect {xxx} from {xxx} scenes, which currently is widely used in {xxx}, additionally, we plan to propose a new approach to {xxx} to get a better accuracy.
+Although movie success has been considered as an unpredictable problme due to its social complexity, we 
+are trying to develop our own model to predict and interpret the relationship among movie-related variables. 
+Specifically, we will crawl raw data from IMDb. After preprocessing,
+the original dataset will be used to train a multimodal neural network for simultaneous movie rating and box-office
+revenue prediction. Finally, the potential relationship among movie-related variables will be analyzed and discussed for further investigation.
 
-\section{Existing Solution}
+\section{Existing Solutions}
 
-So far many researchers have been putting efforts on this domain, before starting this project we also found several approaches, and some of them have got an awesome accuracy, they are YOLO, fast RCNN respectively.
+The idea of developing computational models to predict the financial success of a movie is not completely new.
+Several studies have attampted to develop approaches for box-office revenue prediction. For example, movie trailers
+were used as input data for a linear support vector machine (SVM) classifier to predict the opening-week box-office revenues [1].
+In [2], several nonlinear regression algorithm were employed for building box-office forecasting models. Somdutta Basu built a
+vanilla neural network for movie rating prediction [3].
 
-In YOLO's implementation, YOLO employs a {xxxx} to {xxxx}, the advantages of {xxx} is {xxx}, but there are also some drawbacks, {xxx}.
-
-As for the second method, fast RCNN {xxx}, {xxx}
+The majority of existing solutions, however, focus on either box-office revenue or movie rating prediction alone. 
+Without simultaneous providing useful information, these models fail to cater the demand of both movie producers and viewers.
+Moreover, the performance of traditional prediction methods are typically limited in terms of the ability to process raw data and representation learning.
 
 \section{Proposed Solution}
 
-According to the above information, we propose to {xxx}, we are trying to solve {xxx} problem properly, the estimated result/effection should be {xxx}.
+The project will present an approach for simultaneous prediction of box-office revenue and movie rating using 
+special designed multimodal neural network. The raw data will be crawled from IMDb, including three type of inputs:
 
-\section{Project Milestones}
+\begin{enumerate}
+  \item Movie poster: image data containing potential information of a movie
+  \item Movie genre: a binary vevtor of length 22
+  \item Movie metadata: numerical data such as duration, budget, actors etc.
+\end{enumerate}
+
+To solve this task, we will clean and normalize these different data at first. Then we need to 
+select effective neural networks for different kind of data and compare differnet optimization methods.
+Finally, we will compare our model with different baseline architectures
+
+\section{Milestones}
 
 Project Milestones
 
