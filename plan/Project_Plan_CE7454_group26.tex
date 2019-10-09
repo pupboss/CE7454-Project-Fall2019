@@ -26,72 +26,52 @@
 
 \section{Motivation}
 
-The world's movie industy has witnessed an unprecedented boom in recent years.
-With heavy investments on today's movie industry, reliable predictions of a movie's box-office
-revenue before its theatrical release is essential for producers to reduce financial risk. From the
-perspective of viewers, however, movie ratings is an imporatant factor of the quality of a movie. In
-this project, we are interested in predicting both box-office revenue and movie rating in an early stage,
-aiming to provide useful information for producers, distributors and viewers. 
+The world's movie industry has witnessed an unprecedented boom in recent years. With heavy investments in today's movie industry, reliable predictions of a movie's box-office revenue before its theatrical release is essential for producers to reduce financial risk. From the perspective of viewers, however, movie rating is an important factor to measure the quality of a movie.
+
+In this project, we are interested in predicting both box-office revenue and movie rating in an early stage, aiming to provide useful information for producers, distributors and viewers. 
 
 \section{Project Introduction}
 
-Although movie success has been considered as an unpredictable problme due to its social complexity, we 
-are trying to develop our own model to predict and interpret the relationship among movie-related variables. 
-Specifically, we will crawl raw data from IMDb. After preprocessing,
-the original dataset will be used to train a multimodal neural network for simultaneous movie rating and box-office
-revenue prediction. Finally, the potential relationship among movie-related variables will be analyzed and discussed for further investigation.
+The success of a movie has been considered as an unpredictable problem due to its social complexity, we are trying to develop our own model to disclose the relationship between movie-related variables.
+
+Specifically, we will crawl raw data from IMDb. After preprocessing, the original dataset will be used to train a multimodal neural network for simultaneous movie rating and box-office revenue prediction. Finally, the potential relationship among movie-related variables will be analyzed and discussed for further investigation.
 
 \section{Existing Solutions}
 
-The idea of developing computational models to predict the financial success of a movie is not completely new.
-Several studies have attampted to develop approaches for box-office revenue prediction. For example, movie trailers
-were used as input data for a linear support vector machine (SVM) classifier to predict the opening-week box-office revenues [1].
-In [2], several nonlinear regression algorithm were employed for building box-office forecasting models. Somdutta Basu built a
-vanilla neural network for movie rating prediction [3].
+It is not a whole new idea to predict the financial success of a movie by using computational models, several studies have attempted to develop approaches for box-office revenue prediction.
 
-The majority of existing solutions, however, focus on either box-office revenue or movie rating prediction alone. 
-Without simultaneous providing useful information, these models fail to cater the demand of both movie producers and viewers.
-Moreover, the performance of traditional prediction methods are typically limited in terms of the ability to process raw data and representation learning.
+For example, movie trailers were used as input data for a linear classifier to predict the opening-week box-office revenues \cite{trailer}. In \cite{boxoffice}, several nonlinear regression algorithms were employed for building box-office forecasting models. Somdutta Basu built a vanilla neural network for movie rating prediction \cite{rating}.
 
 \section{Proposed Solution}
 
-The project will present an approach for simultaneous prediction of box-office revenue and movie rating using 
-special designed multimodal neural network. The raw data will be crawled from IMDb, including three type of inputs:
+The majority of existing solutions, however, focus on either box-office revenue or movie rating prediction alone. The project will present an approach for simultaneous prediction of box-office revenue and movie rating using special designed multimodal neural network. The raw data will be crawled from IMDb, including three types of inputs:
 
 \begin{enumerate}
-  \item Movie poster: image data containing potential information of a movie
-  \item Movie genre: a binary vevtor of length 22
-  \item Movie metadata: numerical data such as duration, budget, actors etc.
+  \item Movie Poster: image data containing potential information of a movie
+  \item Movie Genre: a binary vector of length 22
+  \item Movie Metadata: numerical data such as duration, budget, actors etc.
 \end{enumerate}
-
-To solve this task, we will clean and normalize these different data at first. Then we need to 
-select effective neural networks for different kind of data and compare differnet optimization methods.
-Finally, we will compare our model with different baseline architectures
 
 \section{Milestones}
 
-Project Milestones
-
 \subsection{Data Acquisition \& Data Cleaning}
 
-Data Acquisition Data Cleaning
+To deliver this proposal, first we will crawl data from IMDb, together we will clean and normalize those data for furthur analytics, this work should be done before week 9.
 
 \subsection{Apply Deep Learning Methods}
 
-Apply Deep Learning Methods
+Simultaneously, since we already have a plan on the data type in use, neural network designing could start at the same time, this one should be done before week 10, by the mean time we will have an effective neural network.
 
 \subsection{Results Analytics}
 
-Results Analytics
-
-\section{Conclusion}
-
-First, we are going to crawl some data from {xxx} to support the trainning process, this should be done before {xxx}, then we will make some improvements based on the existing neural networks, finally an analytics report and the jupyter notebook will be delivered.
+Finally, we will compare our model with different baseline architectures, according to the result, we will try to make some optimizations for our model to improve its accuracy. All deliverables and the final slides will be done in week 12.
 
 \begin{thebibliography}{00}
   
-  \bibitem{xilinxdoc} S. Kumar, W. L. Hamilton, J. Leskovec, D. Jurafsky , ``Community Interaction and Conflict on the Web'' 2018.
-  
+  \bibitem{trailer} Tadimari, A., Kumar, N., Guha, T., \& Narayanan, S. S. (2016). ``Opening big in box office? Trailer content can help.'' \emph{2016 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP).} doi: 10.1109/icassp.2016.7472183.
+  \bibitem{boxoffice} Kim, Taegu, et al. ``Box Office Forecasting Using Machine Learning Algorithms Based on SNS Data.'' \emph{International Journal of Forecasting}, vol. 31, no. 2, 2015, pp. 364–390., doi:10.1016/j.ijforecast.2014.05.006.
+  \bibitem{rating} Basu, Somdutta. ``Movie Rating Prediction System Based on Opinion Mining and Artificial Neural Networks.'' \emph{International Conference on Advanced Computing Networking and Informatics Advances in Intelligent Systems and Computing}, 2018 pp. 41–47.
+
 \end{thebibliography}
 
 \end{document}
