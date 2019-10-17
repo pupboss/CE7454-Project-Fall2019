@@ -3,7 +3,7 @@ import requests
 import pandas as pd
 from pyquery import PyQuery as pq
 
-tt = pd.read_csv('../dataset/movie_2000_to_2018.tsv',usecols=[0], delimiter='\t')
+tt = pd.read_csv('../data/imdb.tsv',usecols=[0], delimiter='\t')
 tt = tt.values.tolist()
 
 for step, each_tt in enumerate(tt):
@@ -51,15 +51,15 @@ for step, each_tt in enumerate(tt):
 	print(poster_url)
 	r = requests.get(poster_url)
 
-	with open("../posters/" + each_tt[0] + ".jpg",'wb') as f:
+	with open("../data/posters/" + each_tt[0] + ".jpg",'wb') as f:
 		f.write(r.content)
 
-	with open('../dataset/spider_info.tsv','a') as f:
+	with open('../data/spider_info.tsv','a') as f:
 		row = (each_tt[0], Budget, Box_Office, Star_1, Star_2, Star_3, Star_1_nm, Star_2_nm, Star_3_nm)
 		row = '\t'.join(row)
 		f.write(row+'\n')
 
-	with open('../dataset/spider_story.tsv','a') as f:
+	with open('../data/spider_story.tsv','a') as f:
 		row = (each_tt[0], Story_Line)
 		row = '\t'.join(row)
 		f.write(row+'\n')
