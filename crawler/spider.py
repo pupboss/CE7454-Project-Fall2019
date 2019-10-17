@@ -1,6 +1,7 @@
 from lxml import etree
 import requests
 import pandas as pd
+import os
 from pyquery import PyQuery as pq
 
 tt = pd.read_csv('../data/imdb.tsv',usecols=[0], delimiter='\t')
@@ -15,19 +16,19 @@ for step, each_tt in enumerate(tt):
 
 	Budget = imdb_html('h4:contains("Budget:")')
 	if Budget:
-	    Budget = Budget[0].tail.strip(' ').split('\n')[0]
+		Budget = Budget[0].tail.strip(' ').split('\n')[0]
 	else:
-	    continue
-	    
+		continue
+		
 	Box_Office = imdb_html('h4:contains("Cumulative Worldwide Gross")')
 	if Box_Office:
-	    Box_Office = Box_Office[0].tail.strip(' ')
+		Box_Office = Box_Office[0].tail.strip(' ')
 	else:
-	    continue
+		continue
 
 	Story_Line = imdb_html('div[id=titleStoryLine]>div[class="inline canwrap"]').text().strip('\t').strip('\n')
 	if not Story_Line:
-	    continue
+		continue
 
 	Stars = imdb_html('h4:contains("Stars:")').siblings()
 	if len(Stars) == 5:
@@ -51,15 +52,18 @@ for step, each_tt in enumerate(tt):
 	print(poster_url)
 	r = requests.get(poster_url)
 
-	with open("../data/posters/" + each_tt[0] + ".jpg",'wb') as f:
+	if not os.path.isdir("./posters"):
+		os.makedirs('./posters')
+
+	with open("./posters/" + each_tt[0] + ".jpg",'wb') as f:
 		f.write(r.content)
 
-	with open('../data/spider_info.tsv','a') as f:
+	with open('./spider_info.tsv','a') as f:
 		row = (each_tt[0], Budget, Box_Office, Star_1, Star_2, Star_3, Star_1_nm, Star_2_nm, Star_3_nm)
 		row = '\t'.join(row)
 		f.write(row+'\n')
 
-	with open('../data/spider_story.tsv','a') as f:
+	with open('./spider_story.tsv','a') as f:
 		row = (each_tt[0], Story_Line)
 		row = '\t'.join(row)
 		f.write(row+'\n')
