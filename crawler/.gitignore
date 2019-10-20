@@ -1,0 +1,4 @@
+# Exclude raw data
+posters/
+spider_info.tsv
+spider_story.tsv

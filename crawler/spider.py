@@ -4,7 +4,7 @@ import pandas as pd
 import os
 from pyquery import PyQuery as pq
 
-tt = pd.read_csv('../data/imdb.tsv',usecols=[0], delimiter='\t')
+tt = pd.read_csv('../data/imdb.tsv', usecols=[0], delimiter='\t')
 tt = tt.values.tolist()
 
 for step, each_tt in enumerate(tt):
