@@ -52,10 +52,10 @@ for step, each_tt in enumerate(tt):
 	print(poster_url)
 	r = requests.get(poster_url)
 
-	if not os.path.isdir("./posters"):
-		os.makedirs('./posters')
+	if not os.path.isdir("../data/posters/"):
+		os.makedirs('../data/posters/')
 
-	with open("./posters/" + each_tt[0] + ".jpg",'wb') as f:
+	with open("../data/posters/" + each_tt[0] + ".jpg",'wb') as f:
 		f.write(r.content)
 
 	with open('./spider_info.tsv','a') as f:
