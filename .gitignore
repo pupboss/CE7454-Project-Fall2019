@@ -110,3 +110,6 @@ venv.bak/
 # mypy
 .mypy_cache/
 .DS_Store
+title.basics.tsv
+title.crew.tsv
+Title.ratings.tsv
