@@ -24,6 +24,13 @@ wheels/
 .installed.cfg
 *.egg
 MANIFEST
+title.basics.tsv
+title.crew.tsv
+title.ratings.tsv
+movie_list.tsv
+movie_2000_to_2018.tsv
+movie_2000_to_2018_part_1.tsv
+movie_2000_to_2018_part_2.tsv
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
