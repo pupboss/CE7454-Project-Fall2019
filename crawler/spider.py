@@ -7,6 +7,9 @@ from pyquery import PyQuery as pq
 tt = pd.read_csv('../data/movie_2000_to_2018.tsv', usecols=[0], delimiter='\t')
 tt = tt.values.tolist()
 
+with open('./spider_story.tsv','a') as f:
+	f.write("tconst\tStory_Line\n")
+
 for step, each_tt in enumerate(tt):
 
 	print(each_tt, step)
