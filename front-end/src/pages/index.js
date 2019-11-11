@@ -1,5 +1,6 @@
 import { connect } from 'dva';
-import { Form, Radio, InputNumber, Button } from 'antd'
+import { Form, Radio, InputNumber, Button } from 'antd';
+import { Chart, Geom, Axis, Tooltip, Legend, Coord } from 'bizcharts';
 import styles from './index.css';
 
 const FormItem = Form.Item
@@ -26,29 +27,32 @@ const tailFormItemLayout = {
   },
 }
 
-const handleSubmit = (e) => {
-  e.preventDefault()
-  this.props.form.validateFieldsAndScroll((err, values) => {
-    if (!err) {
-      const { dispatch } = this.props
-      dispatch({
-        type: 'prediction/predict',
-        payload: {
-          ...values,
-        },
-      })
-    }
-  })
-}
+const cols = {
+  probability: { alias: 'Probability' },
+  status: { alias: 'Status' }
+};
 
 const Page = ({ dispatch, prediction, form }) => {
   const { getFieldDecorator } = form
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    form.validateFieldsAndScroll((err, values) => {
+      if (!err) {
+        dispatch({
+          type: 'prediction/predict',
+          payload: {
+            ...values,
+          },
+        })
+      }
+    })
+  }
 
   return (
     <div className={styles.normal}>
       <div>
         <Form {...formItemLayout} onSubmit={handleSubmit}>
-
           <FormItem label="Category">
             {getFieldDecorator('category', {
               rules: [{ type: 'integer', required: true, message: 'Please select an action', whitespace: true }],
@@ -77,6 +81,13 @@ const Page = ({ dispatch, prediction, form }) => {
           </FormItem>
         </Form>
       </div>
+      <Chart width={600} height={400} data={prediction.boxOfficeData} scale={cols}>
+        <Axis name="status" title/>
+        <Axis name="probability" title/>
+        <Legend position="top" dy={-20} />
+        <Tooltip />
+        <Geom type="interval" position="status*probability" color="status" />
+      </Chart>
     </div>
   );
 }

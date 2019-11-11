@@ -1,6 +1,6 @@
 import cookie from 'js-cookie'
 
-const PREFIX = 'gdcr'
+const PREFIX = 'ce7454'
 
 export function set(key, value, exp) {
   if (typeof document !== 'undefined') {
