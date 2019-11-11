@@ -1,27 +1,5 @@
-
 .normal {
+  width: 100%;
   font-family: Georgia, sans-serif;
   margin-top: 4em;
-  text-align: center;
-}
-
-.title {
-  max-width: 70%;
-  margin-top: 16px;
-  margin-bottom: 20px;
-  font-size: 36px;
-  line-height: 44px;
-  font-weight: 300;
-  color: white;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.subtitle {
-  max-width: 70%;
-  font-size: 17px;
-  line-height: 30px;
-  color: white;
-  margin-left: auto;
-  margin-right: auto;
 }

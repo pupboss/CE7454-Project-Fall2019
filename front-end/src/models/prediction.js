@@ -1,11 +1,11 @@
-import * as expServices from '../services/example'
+import * as expServices from '../services/prediction'
 
 const initialState = {
   result: "initial message"
 }
 
 export default {
-  namespace: 'example',
+  namespace: 'prediction',
 
   state: initialState,
 

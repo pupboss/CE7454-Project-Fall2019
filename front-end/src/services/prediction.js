@@ -18,19 +18,3 @@ export async function registerFogNode(publicKey, secret) {
   })
   return response
 }
-
-export async function unlinkFogNode(publicKey) {
-  const params = qs.stringify({ publicKey }, { skipNulls: true })
-  const response = await request(`${ROOT}/fognode/unlink`, {
-    method: 'POST',
-    body: params,
-  })
-  return response
-}
-
-export async function getFogNodeData() {
-  const response = await request(`${ROOT}/fognode/list`, {
-    method: 'GET',
-  })
-  return response
-}
