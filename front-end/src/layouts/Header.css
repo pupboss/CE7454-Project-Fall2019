@@ -1,0 +1,13 @@
+.normal {
+  height: 72px;
+  padding: 0 50px;
+  background: #fff;
+  border-bottom: solid 1px #e1e1e1;
+}
+
+.logo {
+  display: inline-block;
+  padding-top: 18px;
+  height: 40px;
+  float: left;
+}
