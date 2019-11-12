@@ -1,5 +1,5 @@
 import { connect } from 'dva';
-import { Select, Input, Icon, message, Upload, Row, Col, Rate, Form, Radio, InputNumber, Button } from 'antd';
+import { Select, Icon, message, Upload, Row, Col, Rate, Form, Radio, InputNumber, Button } from 'antd';
 import { Chart, Geom, Axis, Tooltip, Legend } from 'bizcharts';
 import styles from './index.css';
 
@@ -33,29 +33,52 @@ const cols = {
   status: { alias: 'Status' }
 };
 
-const getUploadData = (file) => {
-  console.log(file)
-  return {
-    smfile: file
-  }
+const getBase64 = (img, callback) => {
+  const reader = new FileReader();
+  reader.addEventListener('load', () => callback(reader.result));
+  reader.readAsDataURL(img);
 }
 
-const uploadProps = {
-  data: getUploadData,
-  onChange(info) {
-    if (info.file.status !== 'uploading') {
-      console.log(info.file);
-    }
-    if (info.file.status === 'done') {
-      message.success(`${info.file.name} file uploaded successfully`);
-    } else if (info.file.status === 'error') {
-      message.error(`${info.file.name} file upload failed.`);
-    }
-  },
-};
+const beforeUpload = (file) => {
+  const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+  if (!isJpgOrPng) {
+    message.error('You can only upload JPG/PNG file!');
+  }
+  const isLt2M = file.size / 1024 / 1024 < 2;
+  if (!isLt2M) {
+    message.error('Image must smaller than 2MB!');
+  }
+  return isJpgOrPng && isLt2M;
+}
+
+const genres = ['\N', 'Comedy', 'Fantasy', 'Romance', 'Drama', 'Music', 'Crime', 'Thriller', 'Adventure', 'Animation', 'Action', 'Biography', 'Horror', 'Mystery', 'Sci-Fi', 'Family', 'Sport', 'War', 'Documentary', 'History', 'Western', 'Musical', 'News']
+const ones = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+const genreOptions = []
+for (let i = 0; i < genres.length; i++) {
+  genreOptions.push(<Option key={ones[i]}>{genres[i]}</Option>);
+}
+
+const directors = ['Christopher Nolan', 'Steven Spielberg', 'Jonathan Demme', 'Sidney Lumet', 'M. Night Shyamalan', 'Todd Phillips', 'Tony Kaye', 'Lana Wachowski', 'John Lasseter', 'George Lucas', 'Irvin Kershner', 'Billy Wilder', 'Jason Reitman', 'Spike Jonze', 'Baz Luhrmann', 'Gary Ross', 'Kathryn Bigelow']
+const directorOptions = []
+for (let i = 0; i < directors.length; i++) {
+  directorOptions.push(<Option key={i.toString(9) + i}>{directors[i]}</Option>);
+}
+
+const actors = ['Leonardo DiCaprio', 'Talia Shire', 'Diane Keaton', 'Keira Knightley', 'Morgan Freeman', 'Brad Pitt', 'Al Pacino', 'Harrison Ford', 'Uma Thurman', 'Amy Adams', 'Marion Cotillard', 'Jessica Chastain', 'Johnny Depp', 'Bruce Willis', 'Ralph Fiennes', 'Jack Nicholson', 'Samuel L. Jackson', 'Robin Wright', 'Tilda Swinton']
+const actorOptions = []
+for (let i = 0; i < actors.length; i++) {
+  actorOptions.push(<Option key={i.toString(11) + i}>{actors[i]}</Option>);
+}
 
 const Page = ({ dispatch, prediction, form }) => {
   const { getFieldDecorator } = form
+
+  const uploadButton = (
+    <div>
+      <Icon type={prediction.poster.loading ? 'loading' : 'plus'} />
+      <div className="ant-upload-text">Upload</div>
+    </div>
+  );
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -70,6 +93,35 @@ const Page = ({ dispatch, prediction, form }) => {
       }
     })
   }
+
+  const handleChange = (info) => {
+    if (info.file.status === 'uploading') {
+      dispatch({
+        type: 'prediction/updateUserData',
+        payload: {
+          poster: {
+            loading: true,
+            imageUrl: null,
+          },
+        },
+      })
+      return;
+    }
+    if (info.file.status === 'done') {
+      // Get this url from response in real world.
+      getBase64(info.file.originFileObj, (imageUrl) => {
+        dispatch({
+          type: 'prediction/updateUserData',
+          payload: {
+            poster: {
+              loading: false,
+              imageUrl: imageUrl,
+            },
+          },
+        })
+      });
+    }
+  };
 
   return (
     <div className={styles.normal}>
@@ -88,18 +140,17 @@ const Page = ({ dispatch, prediction, form }) => {
             )}
           </FormItem>
           <FormItem label="Poster">
-            <Upload {...uploadProps}>
-              <Button>
-                <Icon type="upload" /> Click to Upload
-              </Button>
+            <Upload
+              name="avatar"
+              listType="picture"
+              className="avatar-uploader"
+              showUploadList={false}
+              action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+              beforeUpload={beforeUpload}
+              onChange={handleChange}
+            >
+              {prediction.poster.imageUrl ? <img src={prediction.poster.imageUrl} alt="avatar" style={{ width: '100%' }} /> : uploadButton}
             </Upload>
-          </FormItem>
-          <FormItem label="Title">
-            {getFieldDecorator('title', {
-              rules: [{ required: true, message: 'Please input the title' }],
-            })(
-              <Input />
-            )}
           </FormItem>
           <FormItem label="Year">
             {getFieldDecorator('year', {
@@ -127,10 +178,21 @@ const Page = ({ dispatch, prediction, form }) => {
                   style={{ width: 200 }}
                   placeholder="Select a director"
                 >
-                  <Option value="jack">Jack</Option>
-                  <Option value="lucy">Lucy</Option>
-                  <Option value="tom">Tom</Option>
+                  {directorOptions}
                 </Select>
+            )}
+          </FormItem>
+          <FormItem label="Actors">
+            {getFieldDecorator('actors', {
+              rules: [{ required: true, message: 'Please select some actors' }],
+            })(
+              <Select
+                mode="multiple"
+                style={{ width: '70%' }}
+                placeholder="Please select"
+              >
+                {actorOptions}
+              </Select>
             )}
           </FormItem>
           <FormItem label="Budget">
@@ -141,6 +203,19 @@ const Page = ({ dispatch, prediction, form }) => {
               <InputNumber step={100000} style={{ width: '140px' }} />
             )}
             <span className="ant-form-text"> USD</span>
+          </FormItem>
+          <FormItem label="Genres">
+            {getFieldDecorator('genres', {
+              rules: [{ required: true, message: 'Please select some genres' }],
+            })(
+              <Select
+                mode="multiple"
+                style={{ width: '70%' }}
+                placeholder="Please select"
+              >
+                {genreOptions}
+              </Select>
+            )}
           </FormItem>
           <FormItem {...tailFormItemLayout}>
             <Button type="primary" htmlType="submit">

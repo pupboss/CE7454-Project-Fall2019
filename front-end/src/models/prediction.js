@@ -1,7 +1,7 @@
 import * as expServices from '../services/prediction'
 
 const initialState = {
-  form: {
+  poster: {
     loading: false,
     imageUrl: null,
   },
