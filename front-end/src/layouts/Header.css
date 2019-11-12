@@ -11,3 +11,8 @@
   height: 40px;
   float: left;
 }
+
+.title {
+  padding-top: 16px;
+  text-align: center;
+}

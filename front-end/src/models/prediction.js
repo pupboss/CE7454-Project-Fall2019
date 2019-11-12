@@ -1,6 +1,10 @@
 import * as expServices from '../services/prediction'
 
 const initialState = {
+  form: {
+    loading: false,
+    imageUrl: null,
+  },
   boxOfficeData: [
     { status: 'Loss', probability: 0.15 },
     { status: 'Flat', probability: 0.8 },
