@@ -12,51 +12,47 @@ class Flatten(nn.Module):
 class RatingModel(nn.Module):
 	def __init__(self, len_actor, len_writer, len_director, len_genre):
 		super(RatingModel, self).__init__()
-		# embed_size = 16
-		# embed_size_genre = 50
-		# self.actor_embed = nn.Embedding(len_actor, embed_size)
-		# self.writer_embed = nn.Embedding(len_writer, embed_size)
-		# self.director_embed = nn.Embedding(len_director, embed_size)
-		# self.MLP = nn.Sequential(
-		# 	nn.Linear(embed_size*5+embed_size_genre, 64),
-		# 	nn.Dropout(p=0.5),
-		# 	nn.Linear(64, 64),
-		# 	nn.Dropout(p=0.5),
-		# 	nn.Linear(64, 1))
-
-		self.lstm = nn.LSTM(50, 50, num_layers=2, batch_first=True)
-		self.LSTM_MLP = nn.Sequential(
-			nn.Linear(hps.seq_max_len*50, 1024),
-			nn.Dropout(p=0.2),
-			nn.ReLU6(),
-			nn.Linear(1024, 512),
-			nn.ReLU6(),
-			nn.Dropout(p=0.2),
-			nn.Linear(512, 256)
-		)
+		# LSTM
+		self.lstm = nn.LSTM(50, 50, num_layers=1, batch_first=True)
+		self.LSTM_MLP = nn.Linear(hps.seq_max_len*50, 256)
 
 		# Res Net 18
-		seed_model = imagemodels.__dict__['resnet18'](pretrained=False)
+		seed_model = imagemodels.__dict__['resnet18'](pretrained=True)
 		seed_model = nn.Sequential(*list(seed_model.children())[:-1])
+		for param in seed_model.parameters():
+			param.requires_grad = False
 		last_layer_index = len(list(seed_model.children()))
 		seed_model.add_module(str(last_layer_index), Flatten())
-		seed_model.add_module(str(last_layer_index+1), nn.Linear(512,256))
+		seed_model.add_module(str(last_layer_index+1), nn.Linear(512,128))
 		self.CNN = seed_model
 
-		self.MLP = nn.Sequential(
-			nn.Linear(512,512),
-			nn.ReLU6(),
-			nn.Linear(512,512),
-			nn.ReLU6(),
-			nn.Linear(512,1)
+		# Attributes
+		embed_size = 16
+		self.actor_embed = nn.Embedding(len_actor, embed_size)
+		self.writer_embed = nn.Embedding(len_writer, embed_size)
+		self.director_embed = nn.Embedding(len_director, embed_size)
+		self.MLP_attri = nn.Sequential(
+			nn.Linear(len_genre + 3 + embed_size * 5, 128),
+			nn.Dropout(p=0.2),
+			nn.ReLU(),
+			nn.Linear(128, 128),
+			nn.Dropout(p=0.2),
+			nn.ReLU(),
+			nn.Linear(128, 128)
+		)
+
+		self.predictor = nn.Sequential(
+			nn.Linear(128+256+128, 512),
+			nn.Dropout(p=0.2),
+			nn.ReLU(),
+			nn.Linear(512, 512),
+			nn.Dropout(p=0.2),
+			nn.ReLU(),
+			nn.Linear(512, 1)
 		)
 
 
-	def forward(self, actor, writer, director, genre, seq, seq_len, ratio, img):
-		# actor = self.actor_embed(actor).flatten(1)
-		# writer = self.writer_embed(writer).flatten(1)
-		# director = self.director_embed(director).flatten(1)
-		# genre = self.genre_embed(genre).flatten(1)
+	def forward(self, attributes, actor, writer, director, genre, seq, seq_len, img):
 
 		# LSTM Net
 		seq_packed = pack_padded_sequence(seq, seq_len, batch_first=True, enforce_sorted=False)
@@ -67,15 +63,40 @@ class RatingModel(nn.Module):
 
 		img = self.CNN(img)
 
-		x = torch.cat([seq_unpacked, img], dim=1)
+		actor = self.actor_embed(actor).flatten(1)
+		writer = self.writer_embed(writer).flatten(1)
+		director = self.director_embed(director).flatten(1)
+
+		attributes = torch.cat([actor, writer, director, genre, attributes], dim=1)
+		attributes = self.MLP_attri(attributes)
+
+		pre_rating = torch.cat([attributes, seq_unpacked, img], dim=1)
+		pre_rating = self.predictor(pre_rating)
+
+		return pre_rating
+
+
+class BoxOfficeModel(nn.Module):
+	def __init__(self, len_genre):
+		super(BoxOfficeModel, self).__init__()
+
+		self.MLP = nn.Sequential(
+			nn.Linear(len_genre + 3, 64),
+			nn.Dropout(p=0.2),
+			nn.ReLU(),
+			nn.Linear(64,64),
+			nn.Dropout(p=0.2),
+			nn.ReLU(),
+			nn.Linear(64,2)
+		)
+		self.softmax = nn.Softmax(dim=1)
+
+
+	def forward(self, genre, attributes):
+
+		x = torch.cat([genre, attributes], dim=1)
 		x = self.MLP(x)
 
-		# x = torch.cat([genre], dim=1)
-		# x = self.MLP(ratio)
-		# x = self.MLP(genre)
-
-		# Res Net 18
-		# x = self.CNN(img)
-
+		x = self.softmax(x)
 
 		return x
