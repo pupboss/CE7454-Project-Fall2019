@@ -7,7 +7,6 @@ const initialState = {
   },
   boxOfficeData: [
     { status: 'Loss', probability: 0.15 },
-    { status: 'Flat', probability: 0.8 },
     { status: 'Profit', probability: 0.05 }
   ],
   rating: 8,

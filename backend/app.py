@@ -6,12 +6,13 @@ from flask import request
 from flask import jsonify
 
 import torch
+import torch.nn as nn
 
-class Net(torch.nn.Module):
+class Net(nn.Module):
     def __init__(self, n_feature, n_hidden, n_output):
         super(Net, self).__init__()
-        self.hidden = torch.nn.Linear(n_feature, n_hidden)
-        self.predict = torch.nn.Linear(n_hidden, n_output)
+        self.hidden = nn.Linear(n_feature, n_hidden)
+        self.predict = nn.Linear(n_hidden, n_output)
 
     def forward(self, x):
 
@@ -19,9 +20,32 @@ class Net(torch.nn.Module):
         x = self.predict(x)
         return x
 
+class BoxOfficeModel(nn.Module):
+    def __init__(self, len_genre):
+        super(BoxOfficeModel, self).__init__()
+        self.MLP = nn.Sequential(
+            nn.Linear(len_genre + 3, 64),
+            nn.Dropout(p=0.2),
+            nn.ReLU(),
+            nn.Linear(64,64),
+            nn.Dropout(p=0.2),
+            nn.ReLU(),
+            nn.Linear(64,2)
+        )
+        self.softmax = nn.Softmax(dim=1)
+
+    def forward(self, x):
+        x = self.MLP(x)
+        x = self.softmax(x)
+        return x
+
 model = Net(n_feature=26, n_hidden=10, n_output=1)
 checkpoint = torch.load("../model/VanillaMLP.pth")
 model.load_state_dict(checkpoint)
+
+boxoffice_model = BoxOfficeModel(len_genre=23)
+checkpoint = torch.load("../model/ckpt_boxoffice7.pth")
+boxoffice_model.load_state_dict(checkpoint['Model_state_dict'])
 
 def rating_pred(genre, budget, duration, year):
     mean = torch.load('../data/mean.pt')
@@ -43,7 +67,10 @@ def rating_pred(genre, budget, duration, year):
 
     pre_rating = float(model(x).detach().numpy())
 
-    return pre_rating
+    x = torch.cat([genre_onehot, year, duration, budget]).unsqueeze(0)
+    pre_boxoffice = boxoffice_model(x).squeeze(0).detach().numpy()
+
+    return pre_rating, float(pre_boxoffice[0]), float(pre_boxoffice[1])
 
 app = Flask(__name__)
 CORS(app)
@@ -61,8 +88,8 @@ def predict():
     genres = data['genres']
     genre = [int(p) for p in genres.split(',')]
 
-    r = rating_pred(genre, budget, duration, year)
-    result = {'rating': r}
+    rt, loss, profit = rating_pred(genre, budget, duration, year)
+    result = {'rating': rt, 'boxOfficeData': [{'status': 'Loss', 'probability': loss}, {'status': 'Profit', 'probability': profit}]}
 
     return jsonify(result)
 
