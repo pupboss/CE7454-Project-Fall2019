@@ -4,7 +4,7 @@ class Hyperparams(object):
 	train_path = '/home/shenmeng/tmp/imdb/dataset/imdb/train.tsv'
 	val_path = '/home/shenmeng/tmp/imdb/dataset/imdb/val.tsv'
 	crew_path = '/home/shenmeng/tmp/imdb/dataset/crew.pkl'
-	glove_path = '/home/shenmeng/tmp/imdb/glove.6B/'
+	glove_path = '../data/'
 	poster_path = '/home/shenmeng/tmp/imdb/posters/'
 	seq_max_len = 100
 
