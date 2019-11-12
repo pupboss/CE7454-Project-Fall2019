@@ -1,18 +1,11 @@
 import qs from 'qs'
 import request from '../utils/request'
 
-const ROOT = 'https://api.apiopen.top'
+const ROOT = 'http://localhost:5000'
 
-export async function show() {
-  const response = await request(`${ROOT}/recommendPoetry`, {
-    method: 'GET',
-  })
-  return response
-}
-
-export async function registerFogNode(publicKey, secret) {
-  const params = qs.stringify({ publicKey, secret }, { skipNulls: true })
-  const response = await request(`${ROOT}/fognode/register`, {
+export async function predict(budget, year, duration, genres) {
+  const params = qs.stringify({ budget, year, duration, genres }, { skipNulls: true })
+  const response = await request(`${ROOT}/predict`, {
     method: 'POST',
     body: params,
   })

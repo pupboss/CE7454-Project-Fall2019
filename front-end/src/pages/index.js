@@ -229,10 +229,7 @@ const Page = ({ dispatch, prediction, form }) => {
           <Col span={12}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ paddingTop: '90px' }}>
-                Predict: <Rate allowHalf disabled count={10} value={8.5} /> 8.5 Stars
-              </div>
-              <div>
-                Actual: <Rate allowHalf disabled count={10} value={8} /> 8 Stars
+                Predict: <Rate allowHalf disabled count={10} value={parseInt(prediction.rating / 0.5) * 0.5} /> {prediction.rating.toFixed(2)} Stars
               </div>
             </div>
           </Col>

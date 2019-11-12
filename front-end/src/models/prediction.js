@@ -1,4 +1,4 @@
-import * as expServices from '../services/prediction'
+import * as predictionServices from '../services/prediction'
 
 const initialState = {
   poster: {
@@ -10,6 +10,7 @@ const initialState = {
     { status: 'Flat', probability: 0.8 },
     { status: 'Profit', probability: 0.05 }
   ],
+  rating: 8,
 }
 
 export default {
@@ -18,9 +19,13 @@ export default {
   state: initialState,
 
   effects: {
-    * show(action, { call, put }) {
-      const { data } = yield call(expServices.show)
-      console.log(data)
+    * predict({ payload: { budget, year, duration, genres } }, { call, put }) {
+      let genreString = ''
+      for (let i = 0; i < genres.length; i++) {
+        genreString += genres[i].toString() + ','
+      }
+      genreString = genreString.slice(0,-1)
+      const { data } = yield call(predictionServices.predict, budget, year, duration, genreString)
       if (data) {
         yield put({
           type: 'updateUserData',
