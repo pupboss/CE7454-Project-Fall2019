@@ -3,8 +3,8 @@ import pickle
 from hyperparams import Hyperparams as hps
 import bcolz
 import numpy as np
-
-
+import os
+from tqdm import tqdm
 
 class Crew(object):
 	"""docstring for Crew"""
@@ -48,6 +48,7 @@ class Crew(object):
 			self.genre2idx[genre] = self.genre_idx
 			self.idx2genre[self.genre_idx] = genre
 			self.genre_idx += 1
+
 
 	def __call__(self, people, imdb_num):
 		if people == 'actor':
@@ -99,22 +100,22 @@ def add_crew(file):
 		crew.add_actor(row[1]['Star_num3'])
 
 
-		if row[1]['Director_num'] == '\\N':
+		if row[1]['directors'] == '\\N':
 			pass
 		else:
-			for each in row[1]['Director_num'].split(','):
+			for each in row[1]['directors'].split(','):
 				crew.add_director(each)
 
-		if row[1]['Writer_num'] == '\\N':
+		if row[1]['writers'] == '\\N':
 			pass
 		else:
-			for each in row[1]['Writer_num'].split(','):
+			for each in row[1]['writers'].split(','):
 				crew.add_writer(each)
 
-		if row[1]['Genre'] == '\\N':
+		if row[1]['genres'] == '\\N':
 			pass
 		else:
-			for each in row[1]['Genre'].split(','):
+			for each in row[1]['genres'].split(','):
 				crew.add_genre(each)
 
 	return crew
@@ -123,9 +124,9 @@ def vocabulary():
 	words = []
 	idx = 0
 	word2idx = {}
-	vectors = bcolz.carray(np.zeros(1), rootdir=f'{hps.glove_path}/6B.50.dat', mode='w')
+	vectors = bcolz.carray(np.zeros(1), rootdir=f'{hps.glove_path}6B.50.dat', mode='w')
 
-	with open(f'{hps.glove_path}/glove.6B.50d.txt', 'rb') as f:
+	with open(f'{hps.glove_path}glove.6B.50d.txt', 'rb') as f:
 		for l in f:
 			line = l.decode().split()
 			word = line[0]
@@ -135,14 +136,15 @@ def vocabulary():
 			vect = np.array(line[1:]).astype(np.float)
 			vectors.append(vect)
 
-	vectors = bcolz.carray(vectors[1:].reshape((400000, 50)), rootdir=f'{hps.glove_path}/6B.50.dat', mode='w')
+	vectors = bcolz.carray(vectors[1:].reshape((400000, 50)), rootdir=f'{hps.glove_path}6B.50.dat', mode='w')
 	vectors.flush()
-	pickle.dump(words, open(f'{hps.glove_path}/6B.50_words.pkl', 'wb'))
-	pickle.dump(word2idx, open(f'{hps.glove_path}/6B.50_idx.pkl', 'wb'))
+	pickle.dump(words, open(f'{hps.glove_path}6B.50_words.pkl', 'wb'))
+	pickle.dump(word2idx, open(f'{hps.glove_path}6B.50_idx.pkl', 'wb'))
 
 def main():
 
-	vocabulary()
+	if not os.path.isfile(hps.glove_path +'6B.50_words.pkl') and not os.path.isfile(hps.glove_path +'6B.50_idx.pkl') :
+		vocabulary()
 
 	crew = add_crew(hps.all_data)
 	with open(hps.crew_path, 'wb') as f:

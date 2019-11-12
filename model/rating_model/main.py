@@ -19,7 +19,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def run(train_loader, val_loader, model, loss_function, optimizer, epoch):
 
-	scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[50, 100, 150], gamma=0.1)
+	scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[25, 60, 100], gamma=0.1)
 
 	while True:
 		if epoch>100:
@@ -29,22 +29,22 @@ def run(train_loader, val_loader, model, loss_function, optimizer, epoch):
 
 		log_loss = 0
 
-		for (rating, ratio, actor, writer, director, genre, seq, seq_len, img) in tqdm(train_loader,desc="Training"):
+		for (rating, attributes, actor, writer, director, genre, seq, seq_len, img, profitable_label) in tqdm(train_loader,desc="Training"):
 
 			rating = rating.to(device)
-			ratio = ratio.to(device)
 			actor = actor.to(device)
 			writer = writer.to(device)
 			director = director.to(device)
 			genre = genre.to(device)
 			seq = seq.to(device)
 			img = img.to(device)
+			attributes = attributes.to(device)
 
-			predicted_rating = model(actor, writer, director, genre, seq, seq_len, ratio, img)
+			pre_rating = model(attributes, actor, writer, director, genre, seq, seq_len, img)
 
 			optimizer.zero_grad()
 
-			loss = loss_function(predicted_rating, rating)
+			loss = loss_function(pre_rating, rating)
 
 			loss.backward()
 
@@ -58,11 +58,11 @@ def run(train_loader, val_loader, model, loss_function, optimizer, epoch):
 		epoch, len(train_loader), log_loss/len(train_loader))
 		print(log)
 
-		torch.save({
-			'Model_state_dict': model.state_dict(),
-			'optimizer': optimizer.state_dict(),
-			'epoch': epoch
-		}, '/home/shenmeng/tmp/imdb/ckpt/ckpt_{}.pth'.format(epoch))
+		# torch.save({
+		# 	'Model_state_dict': model.state_dict(),
+		# 	'optimizer': optimizer.state_dict(),
+		# 	'epoch': epoch
+		# }, '/home/shenmeng/tmp/imdb/ckpt/ckpt_{}.pth'.format(epoch))
 
 		val(val_loader, model)
 
@@ -76,17 +76,17 @@ def val(val_loader, model):
 	loss = 0
 	loss_random = 0
 	with torch.no_grad():
-		for (rating, ratio, actor, writer, director, genre, seq, seq_len, img) in val_loader:
+		for (rating, attributes, actor, writer, director, genre, seq, seq_len, img, profitable_label) in val_loader:
 			rating = rating.to(device)
-			ratio = ratio.to(device)
 			actor = actor.to(device)
 			writer = writer.to(device)
 			director = director.to(device)
 			genre = genre.to(device)
 			seq = seq.to(device)
 			img = img.to(device)
+			attributes = attributes.to(device)
 
-			predicted_rating = model(actor, writer, director, genre, seq, seq_len, ratio, img)
+			predicted_rating = model(attributes, actor, writer, director, genre, seq, seq_len, img)
 
 			predicted_rating = predicted_rating.squeeze(1).detach().cpu().numpy()
 			rating = rating.squeeze(1).detach().cpu().numpy()
@@ -118,10 +118,11 @@ def main():
 	model = model.to(device)
 
 	params = [p for p in model.parameters() if p.requires_grad]
-	# for name, param in model.named_parameters():
-	# 	if param.requires_grad:
-	# 		print(name)
-	optimizer = torch.optim.SGD(params, lr=0.0001, momentum=0.95)
+
+	for name, param in model.named_parameters():
+		if param.requires_grad:
+			print(name)
+	optimizer = torch.optim.SGD(params, lr=0.0005, momentum=0.95)
 	epoch = 1
 
 	if load_ckpt:
@@ -131,6 +132,5 @@ def main():
 		optimizer.load_state_dict(checkpoint['optimizer'])
 
 	run(train_loader, val_loader, model, loss_function, optimizer, epoch)
-
 
 main()
