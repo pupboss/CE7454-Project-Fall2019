@@ -1,10 +1,11 @@
 class Hyperparams(object):
+	all_data = "../data/imdb.tsv"
+	train_path = '../data/train.tsv'
+	val_path = '../data/val.tsv'
+	lookuptable_path = '../data/lookuptable.pkl'
+	poster_path = '../data/posters/'
+
 	batch_size = 16
-	all_data = "/home/shenmeng/tmp/imdb/dataset/imdb/imdb.tsv"
-	train_path = '/home/shenmeng/tmp/imdb/dataset/imdb/train.tsv'
-	val_path = '/home/shenmeng/tmp/imdb/dataset/imdb/val.tsv'
-	crew_path = '/home/shenmeng/tmp/imdb/dataset/crew.pkl'
-	glove_path = '../data/'
-	poster_path = '/home/shenmeng/tmp/imdb/posters/'
+	min_frequency = 5
 	seq_max_len = 100
 

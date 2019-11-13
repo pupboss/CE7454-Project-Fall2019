@@ -3,10 +3,8 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 import pickle
 import torch
-
 import torch.nn as nn
-import time
-from crew import Crew
+from lookuptable import LookupTable
 from torch.utils.data import DataLoader
 from hyperparams import Hyperparams as hps
 from dataloader import IMDB
@@ -14,12 +12,13 @@ import numpy as np
 from model import RatingModel
 import torch.onnx
 from tqdm import tqdm
+from torch.nn.utils import clip_grad_norm_
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def run(train_loader, val_loader, model, loss_function, optimizer, epoch):
 
-	scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[25, 60, 100], gamma=0.1)
+	scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=list(range(5,100,5)), gamma=1/1.1)
 
 	while True:
 		if epoch>100:
@@ -48,21 +47,22 @@ def run(train_loader, val_loader, model, loss_function, optimizer, epoch):
 
 			loss.backward()
 
+			norm = clip_grad_norm_(model.parameters(), max_norm=1, norm_type=2)
+
 			optimizer.step()
 
 			log_loss += loss.item()
 
 			scheduler.step(epoch)
 
-		log = "epoch:{}, step:{}, loss:{:.3f}".format(
-		epoch, len(train_loader), log_loss/len(train_loader))
+		log = "epoch:{}, step:{}, loss:{:.3f}, norm:{:.3f}".format(
+		epoch, len(train_loader), log_loss/len(train_loader), norm)
 		print(log)
 
-		# torch.save({
-		# 	'Model_state_dict': model.state_dict(),
-		# 	'optimizer': optimizer.state_dict(),
-		# 	'epoch': epoch
-		# }, '/home/shenmeng/tmp/imdb/ckpt/ckpt_{}.pth'.format(epoch))
+		torch.save({
+			'Model_state_dict': model.state_dict(),
+			'epoch': epoch
+		}, '/home/shenmeng/tmp/imdb/ckpt/ckpt_{}.pth'.format(epoch))
 
 		val(val_loader, model)
 
@@ -100,20 +100,21 @@ def val(val_loader, model):
 def main():
 	load_ckpt = False
 	which_ckpt = "/home/shenmeng/tmp/imdb/ckpt/ckpt_1.pth"
-	with open(hps.crew_path,'rb') as f:
-		crew = pickle.load(f)
-	train_loader = DataLoader(IMDB(hps.train_path, crew),
+	with open(hps.lookuptable_path,'rb') as f:
+		lookuptable = pickle.load(f)
+	train_loader = DataLoader(IMDB(hps.train_path, lookuptable),
 							  batch_size=hps.batch_size,
 							  shuffle=True,num_workers=32)
-	val_loader = DataLoader(IMDB(hps.val_path, crew),
+	val_loader = DataLoader(IMDB(hps.val_path, lookuptable),
 							batch_size=hps.batch_size,
 							shuffle=False,
 							num_workers=32)
 	loss_function = nn.L1Loss().to(device)
-	model = RatingModel(crew.cal_len('actor'),
-						crew.cal_len('writer'),
-						crew.cal_len('director'),
-						crew.cal_len('genre')
+	model = RatingModel(lookuptable.cal_len('actor'),
+						lookuptable.cal_len('writer'),
+						lookuptable.cal_len('director'),
+						lookuptable.cal_len('genre'),
+						lookuptable.cal_len('word')
 						)
 	model = model.to(device)
 
@@ -122,7 +123,7 @@ def main():
 	for name, param in model.named_parameters():
 		if param.requires_grad:
 			print(name)
-	optimizer = torch.optim.SGD(params, lr=0.0005, momentum=0.95)
+	optimizer = torch.optim.Adam(params, lr=5e-4, weight_decay=1e-3)
 	epoch = 1
 
 	if load_ckpt:

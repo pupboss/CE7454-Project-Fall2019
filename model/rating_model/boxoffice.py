@@ -7,7 +7,7 @@ import torch
 
 import torch.nn as nn
 import time
-from crew import Crew
+from lookuptable import LookupTable
 from torch.utils.data import DataLoader
 from hyperparams import Hyperparams as hps
 from dataloader import IMDB
@@ -117,26 +117,24 @@ def val(val_loader, model):
 def main():
     load_ckpt = False
     which_ckpt = "/home/shenmeng/tmp/imdb/ckpt/ckpt_1.pth"
-    with open(hps.crew_path, 'rb') as f:
-        crew = pickle.load(f)
-    train_loader = DataLoader(IMDB(hps.train_path, crew),
+    with open(hps.lookuptable_path, 'rb') as f:
+        lookuptable = pickle.load(f)
+    train_loader = DataLoader(IMDB(hps.train_path, lookuptable),
                               batch_size=hps.batch_size,
                               shuffle=True, num_workers=32)
-    val_loader = DataLoader(IMDB(hps.val_path, crew),
+    val_loader = DataLoader(IMDB(hps.val_path, lookuptable),
                             batch_size=hps.batch_size,
                             shuffle=False,
                             num_workers=32)
     loss_function = nn.CrossEntropyLoss().to(device)
     model = BoxOfficeModel(
-        crew.cal_len('genre')
+        lookuptable.cal_len('genre')
     )
 
     model = model.to(device)
 
     params = [p for p in model.parameters() if p.requires_grad]
-    # for name, param in model.named_parameters():
-    # 	if param.requires_grad:
-    # 		print(name)
+
     optimizer = torch.optim.SGD(params, lr=0.001, momentum=0.95)
     epoch = 1
 
