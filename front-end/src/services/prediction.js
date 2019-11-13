@@ -1,7 +1,7 @@
 import qs from 'qs'
 import request from '../utils/request'
 
-const ROOT = 'http://localhost:5000'
+const ROOT = 'http://localhost:7454'
 
 export async function predict(budget, year, duration, genres) {
   const params = qs.stringify({ budget, year, duration, genres }, { skipNulls: true })

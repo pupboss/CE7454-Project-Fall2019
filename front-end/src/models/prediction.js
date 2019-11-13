@@ -6,10 +6,10 @@ const initialState = {
     imageUrl: null,
   },
   boxOfficeData: [
-    { status: 'Loss', probability: 0.15 },
-    { status: 'Profit', probability: 0.05 }
+    { status: 'Loss', probability: 0 },
+    { status: 'Profit', probability: 0 }
   ],
-  rating: 8,
+  rating: 0,
 }
 
 export default {
