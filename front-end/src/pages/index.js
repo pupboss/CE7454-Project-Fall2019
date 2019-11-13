@@ -229,7 +229,8 @@ const Page = ({ dispatch, prediction, form }) => {
           <Col span={12}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ paddingTop: '90px' }}>
-                Predict: <Rate allowHalf disabled count={10} value={parseInt(prediction.rating / 0.5) * 0.5} /> {prediction.rating.toFixed(2)} Stars
+                <span className="ant-form-text">Prediction: </span>
+                <Rate allowHalf disabled count={10} value={parseInt(prediction.rating / 0.5) * 0.5} /> {prediction.rating.toFixed(2)} Stars
               </div>
             </div>
           </Col>
