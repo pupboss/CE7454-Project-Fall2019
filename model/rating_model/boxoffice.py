@@ -6,22 +6,20 @@ import pickle
 import torch
 
 import torch.nn as nn
-import time
 from lookuptable import LookupTable
 from torch.utils.data import DataLoader
 from hyperparams import Hyperparams as hps
 from dataloader import IMDB
-import numpy as np
 from model import BoxOfficeModel
 import torch.onnx
 from tqdm import tqdm
 
-# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-device = torch.device("cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# device = torch.device("cpu")
 
 
 def run(train_loader, val_loader, model, loss_function, optimizer, epoch):
-    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[50, 100, 150], gamma=0.1)
+    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=list(range(5,100,5)), gamma=(1/1.1))
 
     while True:
         if epoch > 100:
@@ -42,7 +40,7 @@ def run(train_loader, val_loader, model, loss_function, optimizer, epoch):
             profitable_label = profitable_label.squeeze(1)
             attributes = attributes.to(device)
 
-            predicted_box_office = model(attributes, genre)
+            predicted_box_office = model(attributes, actor, writer, director, genre, seq, seq_len, img)
 
             optimizer.zero_grad()
 
@@ -91,7 +89,7 @@ def val(val_loader, model):
             profitable_label = profitable_label.to(device)
             profitable_label = profitable_label.squeeze(1)
 
-            predicted_box_office = model(attributes, genre)
+            predicted_box_office = model(attributes, actor, writer, director, genre, seq, seq_len, img)
             _, index = torch.max(predicted_box_office, 1)
 
             index = index.detach().cpu().numpy()
@@ -107,11 +105,12 @@ def val(val_loader, model):
                 elif index[i] == 0 and profitable_label[i] == 0:
                     TN +=1
 
-            pre = TP / (TP + FP)
-            recall = TP / (TP + FN)
+        pre = TP / (TP + FP)
+        recall = TP / (TP + FN)
+        F1_Score = (2 * pre * recall) / (pre + recall)
 
 
-    print("Pre: {:.3f} , Recall: {:.3f} ".format(pre, recall))
+    print("Pre: {:.3f} , Recall: {:.3f} , F1: {:.3f}".format(pre, recall, F1_Score))
 
 
 def main():
@@ -128,14 +127,18 @@ def main():
                             num_workers=32)
     loss_function = nn.CrossEntropyLoss().to(device)
     model = BoxOfficeModel(
-        lookuptable.cal_len('genre')
+        lookuptable.cal_len('actor'),
+        lookuptable.cal_len('writer'),
+        lookuptable.cal_len('director'),
+        lookuptable.cal_len('genre'),
+        lookuptable.cal_len('word')
     )
 
     model = model.to(device)
 
     params = [p for p in model.parameters() if p.requires_grad]
 
-    optimizer = torch.optim.SGD(params, lr=0.001, momentum=0.95)
+    optimizer = torch.optim.Adam(params, lr=5e-4, weight_decay=1e-3)
     epoch = 1
 
     if load_ckpt:

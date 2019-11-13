@@ -55,14 +55,14 @@ def run(train_loader, val_loader, model, loss_function, optimizer, epoch):
 
 			scheduler.step(epoch)
 
-		log = "epoch:{}, step:{}, loss:{:.3f}, norm:{:.3f}".format(
-		epoch, len(train_loader), log_loss/len(train_loader), norm)
+		log = "epoch:{}, step:{}, loss:{:.3f}".format(
+		epoch, len(train_loader), log_loss/len(train_loader))
 		print(log)
 
 		torch.save({
 			'Model_state_dict': model.state_dict(),
 			'epoch': epoch
-		}, '/home/shenmeng/tmp/imdb/ckpt/ckpt_{}.pth'.format(epoch))
+		}, '/home/shenmeng/tmp/imdb/ckpt/ckpt_Adam{}.pth'.format(epoch))
 
 		val(val_loader, model)
 
