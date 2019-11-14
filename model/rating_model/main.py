@@ -94,7 +94,7 @@ def val(val_loader, model):
 			rating_random = np.random.normal(6, 1, len(rating))
 			loss_random += abs(rating_random - rating).sum()
 
-		print("Validation Result:{:.3f}".format(float(loss/(len(val_loader)+1)/hps.batch_size)))
+		print("Validation Result:{:.3f}".format(float(loss/(len(val_loader))/hps.batch_size)))
 
 
 def main():
