@@ -11,13 +11,13 @@ class Flatten(nn.Module):
 
 
 class My_LSTM(nn.Module):
-	def __init__(self, len_vocabulary, hidden_size, num_layers):
+	def __init__(self, len_vocabulary, hidden_size, output_size, num_layers):
 		super(My_LSTM, self).__init__()
 		# LSTM
 		self.word_embed = nn.Embedding(len_vocabulary, hidden_size, padding_idx=0)
 		self.lstm = nn.LSTM(hidden_size, hidden_size, num_layers=num_layers, batch_first=True)
-		self.LSTM_MLP = nn.Linear(hps.seq_max_len * hidden_size, hidden_size)
-		self.LSTM_gate = nn.Linear(hidden_size, hidden_size)  # sigmoid-activated gate
+		self.LSTM_MLP = nn.Linear(hps.seq_max_len * hidden_size, output_size)
+		self.LSTM_gate = nn.Linear(output_size, output_size)  # sigmoid-activated gate
 		self.LSTM_sigmoid = nn.Sigmoid()
 
 
@@ -29,10 +29,11 @@ class My_LSTM(nn.Module):
 		seq_unpacked = pad_packed_sequence(seq_packed_output, batch_first=True, padding_value=0, total_length=hps.seq_max_len)[0]
 		seq_unpacked = seq_unpacked.flatten(1)
 		seq_unpacked = self.LSTM_MLP(seq_unpacked)
-		seq_unpacked_gate = self.LSTM_sigmoid(self.LSTM_gate(seq_unpacked))
+		seq_unpacked_gate = self.LSTM_sigmoid(seq_unpacked)
 		seq_unpacked = seq_unpacked_gate * seq_unpacked
+		lstm_gate_average = seq_unpacked_gate.sum(dim=1)/(seq_unpacked_gate.size()[1]) # range from 0 to 1
 
-		return seq_unpacked
+		return seq_unpacked, lstm_gate_average
 
 
 class ResNet18(nn.Module):
@@ -52,10 +53,11 @@ class ResNet18(nn.Module):
 
 	def forward(self, img):
 		img = self.CNN(img)
-		img_gate = self.CNN_sigmoid(self.CNN_gate(img))
+		img_gate = self.CNN_sigmoid(img)
 		img = img_gate * img
+		img_gate_average = img_gate.sum(dim=1)/(img_gate.size()[1]) # range from 0 to 1
 
-		return img
+		return img, img_gate_average
 
 class MLP(nn.Module):
 	def __init__(self, len_actor, len_writer, len_director, len_genre, lstm_h, cnn_h, output_size):

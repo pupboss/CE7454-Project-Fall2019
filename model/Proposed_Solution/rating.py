@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 import pickle
 import torch
@@ -8,26 +8,29 @@ from lookuptable import LookupTable
 from torch.utils.data import DataLoader
 from hyperparams import Hyperparams as hps
 from dataloader import IMDB
-import numpy as np
 from model import RatingModel
 import torch.onnx
 from tqdm import tqdm
 from torch.nn.utils import clip_grad_norm_
 
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def run(train_loader, val_loader, model, loss_function, optimizer, epoch):
 
-	scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=list(range(5,100,5)), gamma=1/1.1)
+	scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=list(range(5,200,5)), gamma=1/1.1)
+
+	plt_train_loss = []
+	plt_val_loss = []
 
 	while True:
-		if epoch>100:
+		if epoch>200:
 			break
 
 		model.train()
 
 		log_loss = 0
-
+		step = 0
 		for (rating, attributes, actor, writer, director, genre, seq, seq_len, img, profitable_label) in tqdm(train_loader,desc="Training"):
 
 			rating = rating.to(device)
@@ -47,13 +50,20 @@ def run(train_loader, val_loader, model, loss_function, optimizer, epoch):
 
 			loss.backward()
 
-			norm = clip_grad_norm_(model.parameters(), max_norm=1, norm_type=2)
+			clip_grad_norm_(model.parameters(), max_norm=1, norm_type=2)
 
 			optimizer.step()
 
 			log_loss += loss.item()
 
 			scheduler.step(epoch)
+			if step % 50 == 0:
+				plt_train_loss.append(float(loss.item()))
+			step += 1
+
+		with open("/home/shenmeng/tmp/imdb/results/train_loss_no_gate_200_epoch.txt","w") as f:
+			for record in plt_train_loss:
+				f.write(str(record)+'\n')
 
 		log = "epoch:{}, step:{}, loss:{:.3f}".format(
 		epoch, len(train_loader), log_loss/len(train_loader))
@@ -62,11 +72,17 @@ def run(train_loader, val_loader, model, loss_function, optimizer, epoch):
 		torch.save({
 			'Model_state_dict': model.state_dict(),
 			'epoch': epoch
-		}, '/home/shenmeng/tmp/imdb/ckpt/ckpt_Adam{}.pth'.format(epoch))
+		}, '/home/shenmeng/tmp/imdb/ckpt/ckpt_Adam_no_gate_200_epoch{}.pth'.format(epoch))
 
-		val(val_loader, model)
+		val_loss = val(val_loader, model)
+		plt_val_loss.append(val_loss)
+
+		with open("/home/shenmeng/tmp/imdb/results/val_loss_no_gate_200_epoch.txt", "w") as f:
+			for record in plt_val_loss:
+				f.write(str(record)+'\n')
 
 		epoch += 1
+
 
 
 def val(val_loader, model):
@@ -74,7 +90,6 @@ def val(val_loader, model):
 	model.eval()
 
 	loss = 0
-	loss_random = 0
 	with torch.no_grad():
 		for (rating, attributes, actor, writer, director, genre, seq, seq_len, img, profitable_label) in val_loader:
 			rating = rating.to(device)
@@ -91,10 +106,12 @@ def val(val_loader, model):
 			predicted_rating = predicted_rating.squeeze(1).detach().cpu().numpy()
 			rating = rating.squeeze(1).detach().cpu().numpy()
 			loss += abs(predicted_rating - rating).sum()
-			rating_random = np.random.normal(6, 1, len(rating))
-			loss_random += abs(rating_random - rating).sum()
 
-		print("Validation Result:{:.3f}".format(float(loss/(len(val_loader))/hps.batch_size)))
+
+		val_loss = float(loss/(len(val_loader))/hps.batch_size)
+		print("Validation Result:{:.3f}".format(val_loss))
+
+	return val_loss
 
 
 def main():
