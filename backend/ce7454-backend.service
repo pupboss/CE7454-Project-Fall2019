@@ -1,0 +1,13 @@
+[Unit]
+Description=uWSGI instance to serve project backend
+After=network.target
+
+[Service]
+User=fog
+Group=fog
+WorkingDirectory=/home/fog/Websites/CE7454-Project-Fall2019/backend
+ExecStart=/usr/bin/python3 app.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

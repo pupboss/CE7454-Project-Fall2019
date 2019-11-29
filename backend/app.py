@@ -40,11 +40,11 @@ class BoxOfficeModel(nn.Module):
         return x
 
 model = Net(n_feature=26, n_hidden=10, n_output=1)
-checkpoint = torch.load("../model/VanillaMLP.pth")
+checkpoint = torch.load("./VanillaMLP.pth")
 model.load_state_dict(checkpoint)
 
 boxoffice_model = BoxOfficeModel(len_genre=23)
-checkpoint = torch.load("../model/ckpt_boxoffice7.pth")
+checkpoint = torch.load("./ckpt_boxoffice7.pth")
 boxoffice_model.load_state_dict(checkpoint['Model_state_dict'])
 
 def rating_pred(genre, budget, duration, year):
