@@ -1,4 +1,4 @@
-# CE7454 Project: Movie Rateing and Box-office Prediction
+# CE7454 Project: Movie Rating and Box-office Prediction
 
 *Group 26: Li Jie, Shen Meng, Wang Ruihang*
 
